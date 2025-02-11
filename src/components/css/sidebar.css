@@ -1,0 +1,54 @@
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    background: #1e293b;
+    color: white;
+    padding-top: 20px;
+    box-shadow: 2px 0px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .sidebar .MuiListItemButton-root {
+    padding: 12px 20px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .sidebar .MuiListItemButton-root:hover {
+    background: #334155;
+    color: #facc15;
+    transform: translateX(5px);
+  }
+  
+  .sidebar .Mui-selected {
+    background: #facc15 !important;
+    color: #1e293b !important;
+    font-weight: bold;
+    border-left: 4px solid white;
+  }
+  
+  .sidebar .MuiListItemIcon-root {
+    min-width: 40px;
+    color: white;
+  }
+  
+  .sidebar .MuiListItemText-root {
+    font-size: 16px;
+  }
+  
+  .sidebar .MuiCollapse-root {
+    background: #334155;
+    border-left: 2px solid #facc15;
+    margin-left: 10px;
+    border-radius: 4px;
+  }
+  
+  .sidebar .MuiCollapse-root .MuiListItemButton-root {
+    padding-left: 30px;
+    color: #f1f5f9;
+  }
+  
+  .sidebar .MuiCollapse-root .MuiListItemButton-root:hover {
+    color: #facc15;
+  }
+  

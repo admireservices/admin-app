@@ -4,7 +4,18 @@ import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider } 
 import RootComponent from "./components/RootComponent";
 import Home from "./components/categories/Home";
 import Report from "./components/categories/Report";
+import Access from "./components/categories/Access";
 import Setting from "./components/categories/Setting";
+import Recipesummary from "./components/categories/Recipesummary";
+import Foodrecipe from "./components/categories/Foodrecipe";
+import Summaryentry from "./components/categories/Summaryentry";
+import Foodrecipeentry from "./components/categories/Foodrecipeentry";
+import Baserecipeentry from "./components/categories/Baserecipeentry";
+import Ratemaster from "./components/categories/Ratemaster";
+import Ratemasterentry from "./components/categories/Ratemasterentry";
+import Baserecipe from "./components/categories/Baserecipe";
+import Ratemasterdata from "./components/categories/Ratemasterdata";
+import Comingsoon from "./components/categories/Comingsoon";
 
 function App() {
   const theme = createTheme({
@@ -38,8 +49,18 @@ function App() {
         <Route index element={<Home />} /> {/* Default page */}
         <Route path="/home" element={<Home />} />
         <Route path="/reports" element={<Report />} />
+        <Route path="/access" element={<Access />} />
         <Route path="/settings" element={<Setting />} />
-        
+        <Route path="/recipesummary" element={<Recipesummary />} />
+        <Route path="/foodrecipe" element={<Foodrecipe />} />
+        <Route path="/summaryentry" element={<Summaryentry />} />
+        <Route path="/foodrecipeentry" element={<Foodrecipeentry />} />
+        <Route path="/baserecipeentry" element={<Baserecipeentry />} />
+        <Route path="/ratemaster" element={<Ratemaster />} />
+        <Route path="/ratemasterentry" element={<Ratemasterentry />} />
+        <Route path="/baserecipe" element={<Baserecipe />} />
+        <Route path="/ratemasterdata" element={<Ratemasterdata />} />
+        <Route path="/comingsoon" element={<Comingsoon />} />
       </Route>
     )
   );

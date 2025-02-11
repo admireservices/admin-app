@@ -6,6 +6,120 @@ import {
   ListItemText,
   ListItemButton,
   Collapse,
+} from "@mui/material";
+import {
+  HomeOutlined,
+  Inventory2Outlined,
+  SettingsOutlined,
+  DescriptionOutlined,
+  ReceiptLongOutlined,
+  ExpandLess,
+  ExpandMore,
+  KitchenOutlined,
+  LiquorOutlined,
+} from "@mui/icons-material";
+import { useLocation, useNavigate } from "react-router-dom";
+import "./css/sidebar.css";
+
+export default function Sidebar() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentPage = location.pathname;
+
+  const [openDropdown, setOpenDropdown] = useState(null);
+
+  const handleDropdownToggle = (index) => {
+    setOpenDropdown((prevOpen) => (prevOpen === index ? null : index));
+  };
+
+  const sidebar = [
+    { title: "Home", icon: <HomeOutlined />, route: "/home" },
+    {
+      title: "Recipe Inventory",
+      icon: <ReceiptLongOutlined />,
+      subcategories: [
+        { name: "Recipe Summary", icon: <KitchenOutlined />, route: "/recipesummary" },
+        { name: "Food Recipe", icon: <KitchenOutlined />, route: "/foodrecipe" },
+        { name: "Rate Master", icon: <KitchenOutlined />, route: "/ratemasterdata" },
+        { name: "Base Recipe", icon: <KitchenOutlined />, route: "/baserecipe" },
+      ],
+    },
+    {
+      title: "Bar Inventory",
+      icon: <Inventory2Outlined />,
+      subcategories: [
+        { name: "Main Bar", icon: <LiquorOutlined />, route: "/comingsoon" },
+        { name: "Storeroom", icon: <LiquorOutlined />, route: "/comingsoon" },
+      ],
+    },
+    {
+      title: "Recipe Data Entry",
+      icon: <ReceiptLongOutlined />,
+      subcategories: [
+        { name: "Recipe Summary Entry", icon: <KitchenOutlined />, route: "/summaryentry" },
+        { name: "Food Recipe Entry", icon: <KitchenOutlined />, route: "/foodrecipeentry" },
+        { name: "Rate Master Entry", icon: <KitchenOutlined />, route: "/ratemasterentry" },
+        { name: "Base Recipe Entry", icon: <KitchenOutlined />, route: "/baserecipeentry" },
+      ],
+    },
+    { title: "Rate Master", icon: <DescriptionOutlined />, route: "/ratemaster" },
+    { title: "Access", icon: <DescriptionOutlined />, route: "/access" },
+    { title: "Reports", icon: <DescriptionOutlined />, route: "/reports" },
+    { title: "Settings", icon: <SettingsOutlined />, route: "/settings" },
+    { title: "Logout", icon: <SettingsOutlined />, route: "/comingsoon" },
+  ];
+
+  return (
+    <List>
+      {sidebar.map((item, index) => (
+        <React.Fragment key={index}>
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() =>
+                item.subcategories ? handleDropdownToggle(index) : navigate(item.route)
+              }
+              selected={!item.subcategories && currentPage === item.route}
+              sx={{ mb: 1 }}
+            >
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.title} />
+              {item.subcategories && (openDropdown === index ? <ExpandLess /> : <ExpandMore />)}
+            </ListItemButton>
+          </ListItem>
+          {item.subcategories && (
+            <Collapse in={openDropdown === index} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                {item.subcategories.map((sub, subIndex) => (
+                  <ListItemButton
+                    key={subIndex}
+                    sx={{ pl: 4 }}
+                    onClick={() => navigate(sub.route)}
+                    selected={currentPage === sub.route}
+                  >
+                    <ListItemIcon>{sub.icon}</ListItemIcon>
+                    <ListItemText primary={sub.name} />
+                  </ListItemButton>
+                ))}
+              </List>
+            </Collapse>
+          )}
+        </React.Fragment>
+      ))}
+    </List>
+  );
+}
+
+
+
+{/*}
+import React, { useState } from "react";
+import {
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemButton,
+  Collapse,
   Box,
 } from "@mui/material";
 import {
@@ -19,6 +133,7 @@ import {
   ReceiptLongOutlined,
 } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
+import "./css/sidebar.css";
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -44,6 +159,18 @@ export default function Sidebar() {
       route: "/home",
     },
     {
+      title: "Recipe Inventory",
+      icon: <ReceiptLongOutlined fontSize="medium" color="primary" />,
+      route: "/inventory",
+      subcategories: [
+        { name: "Recipe Summary", route: "/recipesummary" },
+        { name: "Food Recipe", route: "/foodrecipe" },
+        { name: "Rate Master", route: "/mocktails" },
+        { name: "Base Recipe", route: "/mocktails" },
+        
+      ],
+    },
+    {
       title: "Bar Inventory",
       icon: <Inventory2Outlined fontSize="medium" color="primary" />,
       route: "/bar-inventory",
@@ -53,12 +180,15 @@ export default function Sidebar() {
       ],
     },
     {
-      title: "Recipe Inventory",
+      title: "Recipe Data Entry",
       icon: <ReceiptLongOutlined fontSize="medium" color="primary" />,
       route: "/inventory",
       subcategories: [
-        { name: "Food Recipes", route: "/cocktails" },
-        { name: "Beverages Recipes", route: "/mocktails" },
+        { name: "Recipe Summary entry", route: "/summaryentry" },
+        { name: "Food Recipe entry", route: "/foodrecipeentry" },
+        { name: "Rate Master", route: "/rate" },
+        { name: "Base Recipe", route: "/baserecipe" },
+        { name: "Menu Engineering report", route: "/mocktails" },
       ],
     },
     {
@@ -67,9 +197,24 @@ export default function Sidebar() {
       route: "/reports",
     },
     {
+      title: "Access",
+      icon: <DescriptionOutlined fontSize="medium" color="primary" />,
+      route: "/access",
+    },
+    {
+      title: "Rate Master",
+      icon: <SettingsOutlined fontSize="medium" color="primary" />,
+      route: "/ratemaster",
+    },
+    {
       title: "Settings",
       icon: <SettingsOutlined fontSize="medium" color="primary" />,
       route: "/settings",
+    },
+    {
+      title: "Logout",
+      icon: <logoutOutlined fontSize="medium" color="primary" />,
+      route: "/log",
     },
   ];
 
@@ -130,7 +275,7 @@ export default function Sidebar() {
                 (openDropdown === index ? <ExpandLess /> : <ExpandMore />)}
             </ListItemButton>
           </ListItem>
-          {/* Render Subcategories */}
+          {/* Render Subcategories /}
           {item.subcategories &&
             openDropdown === index &&
             renderSubcategories(item.subcategories, item.route)}
@@ -139,3 +284,4 @@ export default function Sidebar() {
     </List>
   );
 }
+*/}

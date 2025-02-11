@@ -38,7 +38,7 @@ export default function Navbar() {
                     textDecoration: "none",
                   }}
                 >
-                  Admin
+                  ADMIRE SERVICES ADMIN
                 </Typography>
 
               </Box>
