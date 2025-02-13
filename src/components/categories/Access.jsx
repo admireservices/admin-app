@@ -1,3 +1,149 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+const Access = () => {
+  const [loginData, setLoginData] = useState([]);
+  const [formData, setFormData] = useState({ username: "", password: "", role: "admin" });
+  const [editingId, setEditingId] = useState(null);
+
+  useEffect(() => {
+    fetchAccessEntries();
+  }, []);
+
+  const fetchAccessEntries = async () => {
+    try {
+      const response = await axios.get("http://localhost:4040/api/access");
+      setLoginData(response.data);
+    } catch (error) {
+      console.error("Error fetching access entries", error);
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingId) {
+        await axios.put(`http://localhost:4040/api/access/${editingId}`, formData);
+      } else {
+        await axios.post("http://localhost:4040/api/access", formData);
+      }
+      setFormData({ username: "", password: "", role: "admin" });
+      setEditingId(null);
+      fetchAccessEntries();
+    } catch (error) {
+      console.error("Error saving access entry", error);
+    }
+  };
+
+  const handleEdit = (id) => {
+    const entry = loginData.find((item) => item._id === id);
+    if (entry) {
+      setFormData({ username: entry.username, password: "", role: entry.role });
+      setEditingId(id);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:4040/api/access/${id}`);
+      fetchAccessEntries();
+    } catch (error) {
+      console.error("Error deleting access entry", error);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white shadow-lg rounded-lg p-6 w-96">
+        <h2 className="text-xl font-semibold mb-4 text-center">Manage Access</h2>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleChange}
+            className="p-2 border rounded"
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            className="p-2 border rounded"
+            required={!editingId} // Password required only for new entries
+          />
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            className="p-2 border rounded"
+          >
+            <option value="admin">Admin</option>
+            <option value="employee">Employee</option>
+            <option value="office">Office</option>
+          </select>
+          <button type="submit" className="bg-blue-500 text-white p-2 rounded">
+            {editingId ? "Update" : "Add"} Login
+          </button>
+        </form>
+      </div>
+
+      {loginData.length > 0 && (
+        <div className="mt-6 w-3/4">
+          <table className="w-full border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="border p-2">Username</th>
+                <th className="border p-2">Password</th>
+                <th className="border p-2">Role</th>
+                <th className="border p-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loginData.map((item) => (
+                <tr key={item._id} className="text-center">
+                  <td className="border p-2">{item.username}</td>
+                  <td className="border p-2">{item.password}</td>
+                  <td className="border p-2">{item.role}</td>
+                  <td className="border p-2">
+                    <button
+                      onClick={() => handleEdit(item._id)}
+                      className="bg-yellow-500 text-white px-3 py-1 rounded mr-2"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item._id)}
+                      className="bg-red-500 text-white px-3 py-1 rounded"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Access;
+
+
+
+
+
+
+{/*}
 import React, { useState } from "react";
 
 const Access = () => {

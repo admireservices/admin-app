@@ -17,7 +17,7 @@ import {
 export default function BaseRecipeEntry() {
   const [recipeTitle, setRecipeTitle] = useState("");
   const [formData, setFormData] = useState({
-    name: "",
+    ingredient: "",
     unit: "",
     quantity: "",
     rate: "",
@@ -36,7 +36,7 @@ export default function BaseRecipeEntry() {
 
   const fetchData = () => {
     setLoading(true);
-    fetch("http://localhost:5000/api/baserecipe") // Update with actual backend API
+    fetch("http://localhost:4040/api/baserecipe") // Update with actual backend API
       .then((response) => response.json())
       .then((data) => {
         setData(data);
@@ -73,7 +73,7 @@ export default function BaseRecipeEntry() {
 
     const newEntry = { recipeTitle, ...formData };
 
-    fetch("http://localhost:5000/api/baserecipe", {
+    fetch("http://localhost:4040/api/baserecipe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newEntry),
@@ -86,7 +86,7 @@ export default function BaseRecipeEntry() {
       })
       .then(() => {
         fetchData();
-        setFormData({ name: "", unit: "", quantity: "", rate: "", amount: "" });
+        setFormData({ ingredient: "", unit: "", quantity: "", rate: "", amount: "" });
         setLoading(false);
       })
       .catch((error) => {
@@ -117,7 +117,7 @@ export default function BaseRecipeEntry() {
       const parsedData = XLSX.utils.sheet_to_json(sheet);
 
       // Send bulk data to backend
-      fetch("http://localhost:5000/api/baserecipe/upload", {
+      fetch("http://localhost:4040/api/baserecipe/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsedData),
@@ -157,7 +157,7 @@ export default function BaseRecipeEntry() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center" }}>
-        <TextField label="Name" name="name" value={formData.name} onChange={handleChange} required />
+        <TextField label="Ingredient" name="ingredient" value={formData.ingredient} onChange={handleChange} required />
         <TextField label="Unit" name="unit" value={formData.unit} onChange={handleChange} required />
         <TextField label="Quantity" name="quantity" type="number" value={formData.quantity} onChange={handleChange} required />
         <TextField label="Rate" name="rate" type="number" value={formData.rate} onChange={handleChange} required />
@@ -187,7 +187,7 @@ export default function BaseRecipeEntry() {
             <TableHead>
               <TableRow style={{ backgroundColor: "#8BC34A" }}>
                 <TableCell><strong>Recipe Title</strong></TableCell>
-                <TableCell><strong>Name</strong></TableCell>
+                <TableCell><strong>Ingredient</strong></TableCell>
                 <TableCell><strong>Unit</strong></TableCell>
                 <TableCell><strong>Quantity</strong></TableCell>
                 <TableCell><strong>Rate</strong></TableCell>
@@ -198,7 +198,7 @@ export default function BaseRecipeEntry() {
               {data.map((row, index) => (
                 <TableRow key={index}>
                   <TableCell>{row.recipeTitle}</TableCell>
-                  <TableCell>{row.name}</TableCell>
+                  <TableCell>{row.ingredient}</TableCell>
                   <TableCell>{row.unit}</TableCell>
                   <TableCell>{row.quantity}</TableCell>
                   <TableCell>{row.rate}</TableCell>

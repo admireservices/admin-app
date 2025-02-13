@@ -12,8 +12,8 @@ export default function Summaryentry() {
   const [fooditems, setFooditems] = useState([]);
   const [newFoodItem, setNewFoodItem] = useState({ recipeName: "", costPrice: "" });
 
-  const cities = ["New York", "Los Angeles", "Chicago"];
-  const outlets = { "New York": ["Outlet A", "Outlet B"], "Los Angeles": ["Outlet C", "Outlet D"], "Chicago": ["Outlet E", "Outlet F"] };
+  const cities = ["Mumbai", "Delhi", "Pune"];
+  const outlets = { "Mumbai": ["One8", "Lod"], "Delhi": ["Yazu", "Pincode"], "Pune": ["2 BHK", "Ballr"] };
   const categories = ["Soups", "Main Course", "Appetizers"];
 
   // Fetch fooditems from MongoDB on component mount

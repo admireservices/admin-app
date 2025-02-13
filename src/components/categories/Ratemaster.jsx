@@ -37,7 +37,7 @@ export default function RateMaster() {
 
   const fetchData = () => {
     setLoading(true);
-    fetch("http://localhost:5000/api/ratemaster") // Update with actual backend API
+    fetch("http://localhost:4040/api/rateMaster") // Update with actual backend API
       .then((response) => response.json())
       .then((data) => {
         setData(data);
@@ -59,7 +59,7 @@ export default function RateMaster() {
     e.preventDefault();
     setLoading(true);
 
-    fetch("http://localhost:5000/api/ratemaster", {
+    fetch("http://localhost:4040/api/rateMaster", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
@@ -111,7 +111,7 @@ export default function RateMaster() {
       const parsedData = XLSX.utils.sheet_to_json(sheet);
 
       // Send bulk data to backend
-      fetch("http://localhost:5000/api/ratemaster/upload", {
+      fetch("http://localhost:4040/api/rateMaster/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsedData),

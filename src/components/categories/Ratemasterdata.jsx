@@ -17,7 +17,7 @@ export default function RateMasterData() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/ratemasterdata") // Update with actual API endpoint
+    fetch("http://localhost:4040/api/rateMaster") // Update with actual API endpoint
       .then((response) => {
         if (!response.ok) {
           throw new Error("Failed to fetch data");
