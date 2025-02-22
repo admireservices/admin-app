@@ -1,4 +1,242 @@
 import React, { useState, useEffect } from "react";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TextField,
+  Button,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
+
+export default function FoodRecipeEntry() {
+  const [course, setCourse] = useState("");
+  const [recipeName, setRecipeName] = useState("");
+  const [formData, setFormData] = useState({
+    ingredient: "",
+    unit: "",
+    quantity: "",
+    rate: "",
+    amount: "",
+  });
+
+  const [ingredients, setIngredients] = useState([]); // Store multiple ingredients
+  const [data, setData] = useState([]); // Store fetched recipes
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Fetch existing recipes
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = () => {
+    setLoading(true);
+    fetch("http://localhost:4040/api/foodrecipe") // Update with actual backend API
+      .then((response) => response.json())
+      .then((data) => {
+        setData(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error.message);
+        setLoading(false);
+      });
+  };
+
+  // Handle input changes
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Calculate Amount (Quantity × Rate)
+  useEffect(() => {
+    const { quantity, rate } = formData;
+    if (quantity && rate) {
+      setFormData((prev) => ({ ...prev, amount: (quantity * rate).toFixed(2) }));
+    }
+  }, [formData.quantity, formData.rate]);
+
+  // Add ingredient to list
+  const addIngredient = () => {
+    if (!formData.ingredient || !formData.unit || !formData.quantity || !formData.rate) {
+      setError("Please fill all ingredient fields.");
+      return;
+    }
+    setIngredients([...ingredients, formData]);
+    setFormData({ ingredient: "", unit: "", quantity: "", rate: "", amount: "" });
+    setError(null);
+  };
+
+  // Handle form submission (Submit entire recipe)
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!course || !recipeName || ingredients.length === 0) {
+      setError("Please enter Course, Recipe Name, and add at least one ingredient.");
+      return;
+    }
+
+    setLoading(true);
+
+    const newRecipe = { course, recipeName, ingredients };
+
+    fetch("http://localhost:4040/api/foodrecipe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newRecipe),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to save data");
+        }
+        return response.json();
+      })
+      .then(() => {
+        fetchData();
+        setCourse("");
+        setRecipeName("");
+        setIngredients([]); // Clear ingredient list
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error.message);
+        setLoading(false);
+      });
+  };
+
+  return (
+    <div style={{ padding: "20px", textAlign: "center" }}>
+      <h2>Food Recipe Entry</h2>
+
+      {/* Error Message */}
+      {error && <Alert severity="error">{error}</Alert>}
+
+      {/* Course & Recipe Name */}
+      <TextField
+        label="Course"
+        value={course}
+        onChange={(e) => setCourse(e.target.value)}
+        fullWidth
+        required
+        style={{ marginBottom: "20px" }}
+      />
+
+      <TextField
+        label="Recipe Name"
+        value={recipeName}
+        onChange={(e) => setRecipeName(e.target.value)}
+        fullWidth
+        required
+        style={{ marginBottom: "20px" }}
+      />
+
+      {/* Form for Ingredients */}
+      <form style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center" }}>
+        <TextField label="Ingredient" name="ingredient" value={formData.ingredient} onChange={handleChange} required />
+        <TextField label="Unit" name="unit" value={formData.unit} onChange={handleChange} required />
+        <TextField label="Quantity" name="quantity" type="number" value={formData.quantity} onChange={handleChange} required />
+        <TextField label="Rate" name="rate" type="number" value={formData.rate} onChange={handleChange} required />
+        <TextField label="Amount" name="amount" value={formData.amount} disabled />
+
+        <Button variant="contained" color="primary" onClick={addIngredient}>
+          Add Ingredient
+        </Button>
+      </form>
+
+      {/* Show Added Ingredients in Table */}
+      {ingredients.length > 0 && (
+        <TableContainer component={Paper} sx={{ width: "80%", margin: "auto", marginTop: "20px" }}>
+          <Table>
+            <TableHead>
+              <TableRow style={{ backgroundColor: "#8BC34A" }}>
+                <TableCell><strong>Ingredient</strong></TableCell>
+                <TableCell><strong>Unit</strong></TableCell>
+                <TableCell><strong>Quantity</strong></TableCell>
+                <TableCell><strong>Rate</strong></TableCell>
+                <TableCell><strong>Amount</strong></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {ingredients.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>{item.ingredient}</TableCell>
+                  <TableCell>{item.unit}</TableCell>
+                  <TableCell>{item.quantity}</TableCell>
+                  <TableCell>{item.rate}</TableCell>
+                  <TableCell>{item.amount}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      {/* Submit Recipe */}
+      <Button
+        variant="contained"
+        color="secondary"
+        onClick={handleSubmit}
+        style={{ marginTop: "20px" }}
+      >
+        {loading ? <CircularProgress size={24} /> : "Submit Recipe"}
+      </Button>
+
+      {/* Display Submitted Recipes */}
+<h3 style={{ marginTop: "20px" }}>Recipes</h3>
+{loading && <CircularProgress />}
+{!loading && data.length === 0 && <p>No recipes available.</p>}
+
+{!loading && data.length > 0 && (
+  <TableContainer component={Paper} sx={{ width: "90%", margin: "auto" }}>
+    <Table>
+      <TableHead>
+        <TableRow style={{ backgroundColor: "#8BC34A" }}>
+          <TableCell><strong>Course</strong></TableCell>
+          <TableCell><strong>Recipe Name</strong></TableCell>
+          <TableCell><strong>Ingredient</strong></TableCell>
+          <TableCell><strong>Quantity</strong></TableCell>
+          <TableCell><strong>Unit</strong></TableCell>
+          <TableCell><strong>Rate</strong></TableCell>
+          <TableCell><strong>Amount</strong></TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {data.map((row, index) => (
+          row.ingredients.map((ing, idx) => (
+            <TableRow key={`${index}-${idx}`}>
+              {idx === 0 && (
+                <>
+                  <TableCell rowSpan={row.ingredients.length}>{row.course}</TableCell>
+                  <TableCell rowSpan={row.ingredients.length}>{row.recipeName}</TableCell>
+                </>
+              )}
+              <TableCell>{ing.ingredient}</TableCell>
+              <TableCell>{ing.quantity}</TableCell>
+              <TableCell>{ing.unit}</TableCell>
+              <TableCell>{ing.rate}</TableCell>
+              <TableCell>{ing.amount}</TableCell>
+            </TableRow>
+          ))
+        ))}
+      </TableBody>
+    </Table>
+  </TableContainer>
+)}
+
+    </div>
+  );
+}
+
+
+
+
+{/*}
+import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import {
   Table,
@@ -143,10 +381,10 @@ export default function FoodRecipeEntry() {
     <div style={{ padding: "20px", textAlign: "center" }}>
       <h2>Food Recipe Entry</h2>
 
-      {/* Error Message */}
+      {/* Error Message /}
       {error && <Alert severity="error">{error}</Alert>}
 
-      {/* Course & Recipe Name */}
+      {/* Course & Recipe Name /}
       <TextField
         label="Course"
         value={course}
@@ -165,7 +403,7 @@ export default function FoodRecipeEntry() {
         style={{ marginBottom: "20px" }}
       />
 
-      {/* Form */}
+      {/* Form /}
       <form onSubmit={handleSubmit} style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center" }}>
         <TextField label="Ingredient" name="ingredient" value={formData.ingredient} onChange={handleChange} required />
         <TextField label="Unit" name="unit" value={formData.unit} onChange={handleChange} required />
@@ -178,7 +416,7 @@ export default function FoodRecipeEntry() {
         </Button>
       </form>
 
-      {/* Excel Upload */}
+      {/* Excel Upload /}
       <div style={{ marginTop: "20px" }}>
         <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
         <Button variant="contained" color="secondary" onClick={handleExcelSubmit} disabled={!file}>
@@ -186,7 +424,7 @@ export default function FoodRecipeEntry() {
         </Button>
       </div>
 
-      {/* Table */}
+      {/* Table /}
       <h3 style={{ marginTop: "20px" }}>Entered Data</h3>
       {loading && <CircularProgress />}
       {!loading && data.length === 0 && <p>No data available.</p>}
@@ -429,308 +667,6 @@ export default function RecipeTable() {
                     </React.Fragment>
                   ))}
                 </React.Fragment>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-    </div>
-  );
-}
-
-
-
-
-{/*}
-import React, { useState } from "react";
-import * as XLSX from "xlsx";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Button,
-  Paper,
-  Select,
-  MenuItem,
-  TextField,
-  Input,
-} from "@mui/material";
-
-export default function RecipeTable() {
-  const [selectedCourse, setSelectedCourse] = useState("");
-  const [recipes, setRecipes] = useState({
-    Soups: [],
-    Appetizers: [],
-    "Main Course": [],
-    Desserts: [],
-  });
-  const [newRecipe, setNewRecipe] = useState({ recipeName: "", ingredients: [] });
-  const [newIngredient, setNewIngredient] = useState({ ingredient: "", unit: "", qty: "", rate: "", amount: 0 });
-
-  const courses = ["Soups", "Appetizers", "Main Course", "Desserts"];
-
-  const handleAddIngredient = () => {
-    if (!newIngredient.ingredient || !newIngredient.unit || !newIngredient.qty || !newIngredient.rate) {
-      alert("Please fill all ingredient fields.");
-      return;
-    }
-    const amount = (parseFloat(newIngredient.qty) * parseFloat(newIngredient.rate)).toFixed(2);
-    setNewRecipe({ ...newRecipe, ingredients: [...newRecipe.ingredients, { ...newIngredient, amount }] });
-    setNewIngredient({ ingredient: "", unit: "", qty: "", rate: "", amount: 0 });
-  };
-
-  const handleAddRecipe = () => {
-    if (!selectedCourse || !newRecipe.recipeName || newRecipe.ingredients.length === 0) {
-      alert("Please select a course, add a recipe name, and at least one ingredient.");
-      return;
-    }
-    setRecipes({
-      ...recipes,
-      [selectedCourse]: [...recipes[selectedCourse], newRecipe],
-    });
-    setNewRecipe({ recipeName: "", ingredients: [] });
-  };
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const data = new Uint8Array(event.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const parsedData = XLSX.utils.sheet_to_json(sheet);
-      const structuredData = {};
-      parsedData.forEach((row) => {
-        const { Course, RecipeName, Ingredient, Unit, Qty, Rate } = row;
-        if (!structuredData[Course]) structuredData[Course] = [];
-        const existingRecipe = structuredData[Course].find((r) => r.recipeName === RecipeName);
-        const ingredientEntry = { ingredient: Ingredient, unit: Unit, qty: parseFloat(Qty), rate: parseFloat(Rate), amount: (parseFloat(Qty) * parseFloat(Rate)).toFixed(2) };
-        if (existingRecipe) {
-          existingRecipe.ingredients.push(ingredientEntry);
-        } else {
-          structuredData[Course].push({ recipeName: RecipeName, ingredients: [ingredientEntry] });
-        }
-      });
-      setRecipes((prev) => ({ ...prev, ...structuredData }));
-    };
-    reader.readAsArrayBuffer(file);
-  };
-
-  return (
-    <div style={{ padding: "20px", textAlign: "center" }}>
-      <h2>Recipe Management</h2>
-      <div>
-        <Input type="file" onChange={handleFileUpload} />
-      </div>
-      <Select value={selectedCourse} onChange={(e) => setSelectedCourse(e.target.value)} displayEmpty sx={{ width: "200px", margin: "20px" }}>
-        <MenuItem value="" disabled>Select Course</MenuItem>
-        {courses.map((course, index) => (
-          <MenuItem key={index} value={course}>{course}</MenuItem>
-        ))}
-      </Select>
-      <TextField label="Recipe Name" value={newRecipe.recipeName} onChange={(e) => setNewRecipe({ ...newRecipe, recipeName: e.target.value })} sx={{ width: "200px", margin: "10px" }} />
-      <div>
-        <TextField label="Ingredient" value={newIngredient.ingredient} onChange={(e) => setNewIngredient({ ...newIngredient, ingredient: e.target.value })} sx={{ width: "150px" }} />
-        <TextField label="Unit" value={newIngredient.unit} onChange={(e) => setNewIngredient({ ...newIngredient, unit: e.target.value })} sx={{ width: "100px" }} />
-        <TextField label="Qty" type="number" value={newIngredient.qty} onChange={(e) => setNewIngredient({ ...newIngredient, qty: e.target.value })} sx={{ width: "80px" }} />
-        <TextField label="Rate" type="number" value={newIngredient.rate} onChange={(e) => setNewIngredient({ ...newIngredient, rate: e.target.value })} sx={{ width: "80px" }} />
-        <Button variant="contained" onClick={handleAddIngredient}>Add Ingredient</Button>
-      </div>
-      <Button variant="contained" color="primary" onClick={handleAddRecipe} sx={{ margin: "20px" }}>Add Recipe</Button>
-      {selectedCourse && recipes[selectedCourse].length > 0 && (
-        <TableContainer component={Paper} sx={{ width: "80%", margin: "auto" }}>
-          <h3>{selectedCourse}</h3>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell><strong>Recipe Name</strong></TableCell>
-                <TableCell><strong>Ingredients</strong></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {recipes[selectedCourse].map((recipe, index) => (
-                <TableRow key={index}>
-                  <TableCell>{recipe.recipeName}</TableCell>
-                  <TableCell>
-                    {recipe.ingredients.map((ing, idx) => (
-                      <div key={idx}>{ing.ingredient} - {ing.unit} - {ing.qty} - {ing.rate} - {ing.amount}</div>
-                    ))}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-    </div>
-  );
-}
-
-
-
-
-{/*}
-import React, { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Button,
-  Paper,
-  Select,
-  MenuItem,
-  TextField,
-} from "@mui/material";
-
-export default function RecipeTable() {
-  // Dropdown Selection for Course
-  const [selectedCourse, setSelectedCourse] = useState("");
-
-  // Table Data (Grouped by Course Type)
-  const [recipes, setRecipes] = useState({
-    Soups: [],
-    Appetizers: [],
-    "Main Course": [],
-    Desserts: [],
-  });
-
-  // Form Inputs
-  const [newRecipe, setNewRecipe] = useState({
-    recipeName: "",
-    ingredient: "",
-    unit: "",
-    qty: "",
-    rate: "",
-    amount: 0,
-  });
-
-  // Course Options
-  const courses = ["Soups", "Appetizers", "Main Course", "Desserts"];
-
-  // Handle Adding New Recipe
-  const handleAddRecipe = () => {
-    if (!selectedCourse) {
-      alert("Please select a course before adding a recipe.");
-      return;
-    }
-
-    if (!newRecipe.recipeName || !newRecipe.ingredient || !newRecipe.unit || !newRecipe.qty || !newRecipe.rate) {
-      alert("Please fill all fields before adding a recipe.");
-      return;
-    }
-
-    const amount = (parseFloat(newRecipe.qty) * parseFloat(newRecipe.rate)).toFixed(2);
-
-    setRecipes({
-      ...recipes,
-      [selectedCourse]: [
-        ...recipes[selectedCourse],
-        {
-          recipeName: newRecipe.recipeName,
-          ingredient: newRecipe.ingredient,
-          unit: newRecipe.unit,
-          qty: parseFloat(newRecipe.qty),
-          rate: parseFloat(newRecipe.rate).toFixed(2),
-          amount,
-        },
-      ],
-    });
-
-    // Reset Form
-    setNewRecipe({ recipeName: "", ingredient: "", unit: "", qty: "", rate: "", amount: 0 });
-  };
-
-  return (
-    <div style={{ padding: "20px", textAlign: "center" }}>
-      <h2>Recipe Management</h2>
-
-      {/* Course Selection Dropdown /}
-      <div style={{ marginBottom: "20px" }}>
-        <Select
-          value={selectedCourse}
-          onChange={(e) => setSelectedCourse(e.target.value)}
-          displayEmpty
-          sx={{ width: "200px" }}
-        >
-          <MenuItem value="" disabled>Select Course</MenuItem>
-          {courses.map((course, index) => (
-            <MenuItem key={index} value={course}>{course}</MenuItem>
-          ))}
-        </Select>
-      </div>
-
-      {/* Form to Add Recipe /}
-      <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "20px" }}>
-        <TextField
-          label="Recipe Name"
-          value={newRecipe.recipeName}
-          onChange={(e) => setNewRecipe({ ...newRecipe, recipeName: e.target.value })}
-          sx={{ width: "180px" }}
-        />
-        <TextField
-          label="Ingredient"
-          value={newRecipe.ingredient}
-          onChange={(e) => setNewRecipe({ ...newRecipe, ingredient: e.target.value })}
-          sx={{ width: "150px" }}
-        />
-        <TextField
-          label="Unit"
-          value={newRecipe.unit}
-          onChange={(e) => setNewRecipe({ ...newRecipe, unit: e.target.value })}
-          sx={{ width: "100px" }}
-        />
-        <TextField
-          label="Qty"
-          type="number"
-          value={newRecipe.qty}
-          onChange={(e) => setNewRecipe({ ...newRecipe, qty: e.target.value })}
-          sx={{ width: "80px" }}
-        />
-        <TextField
-          label="Rate"
-          type="number"
-          value={newRecipe.rate}
-          onChange={(e) => setNewRecipe({ ...newRecipe, rate: e.target.value })}
-          sx={{ width: "80px" }}
-        />
-        <Button variant="contained" color="primary" onClick={handleAddRecipe}>
-          Add Recipe
-        </Button>
-      </div>
-
-      {/* Table for Selected Course /}
-      {selectedCourse && recipes[selectedCourse].length > 0 && (
-        <TableContainer component={Paper} sx={{ width: "80%", margin: "auto" }}>
-          <h3>{selectedCourse}</h3>
-          <Table>
-            <TableHead>
-              <TableRow style={{ backgroundColor: "#8BC34A" }}>
-                <TableCell><strong>RECIPE NAME</strong></TableCell>
-                <TableCell><strong>INGREDIENT</strong></TableCell>
-                <TableCell><strong>UNIT</strong></TableCell>
-                <TableCell><strong>QTY</strong></TableCell>
-                <TableCell><strong>RATE</strong></TableCell>
-                <TableCell><strong>AMOUNT</strong></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {recipes[selectedCourse].map((recipe, index) => (
-                <TableRow key={index}>
-                  <TableCell>{recipe.recipeName}</TableCell>
-                  <TableCell>{recipe.ingredient}</TableCell>
-                  <TableCell>{recipe.unit}</TableCell>
-                  <TableCell>{recipe.qty}</TableCell>
-                  <TableCell>{recipe.rate}</TableCell>
-                  <TableCell>{recipe.amount}</TableCell>
-                </TableRow>
               ))}
             </TableBody>
           </Table>

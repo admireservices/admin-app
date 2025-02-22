@@ -63,10 +63,12 @@ export default function Sidebar() {
       ],
     },
     { title: "Rate Master", icon: <DescriptionOutlined />, route: "/ratemaster" },
+    { title: "Restaurant", icon: <DescriptionOutlined />, route: "/restaurant" },
+    { title: "predefined", icon: <DescriptionOutlined />, route: "/comingsoon" },
     { title: "Access", icon: <DescriptionOutlined />, route: "/access" },
     { title: "Reports", icon: <DescriptionOutlined />, route: "/reports" },
     { title: "Settings", icon: <SettingsOutlined />, route: "/settings" },
-    { title: "Logout", icon: <SettingsOutlined />, route: "/comingsoon" },
+    { title: "Logout", icon: <SettingsOutlined />, route: "/logout" },
   ];
 
   return (

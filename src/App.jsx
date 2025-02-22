@@ -14,7 +14,11 @@ import Ratemaster from "./components/categories/Ratemaster";
 import Ratemasterentry from "./components/categories/Ratemasterentry";
 import Baserecipe from "./components/categories/Baserecipe";
 import Ratemasterdata from "./components/categories/Ratemasterdata";
+import Restaurant from "./components/categories/Restaurant";
 import Comingsoon from "./components/categories/Comingsoon";
+import Login from "./components/categories/Login";
+import Logout from "./components/categories/Logout";
+
 
 function App() {
   const theme = createTheme({
@@ -32,6 +36,7 @@ function App() {
     createRoutesFromElements(
       <Route path="/" element={<RootComponent />}>
         <Route index element={<Home />} /> {/* Default page */}
+        <Route path="/login" element={<Login />} />
         <Route path="/home" element={<Home />} />
         <Route path="/reports" element={<Report />} />
         <Route path="/access" element={<Access />} />
@@ -45,7 +50,10 @@ function App() {
         <Route path="/ratemasterentry" element={<Ratemasterentry />} />
         <Route path="/baserecipe" element={<Baserecipe />} />
         <Route path="/ratemasterdata" element={<Ratemasterdata />} />
+        <Route path="/restaurant" element={<Restaurant />} />
         <Route path="/comingsoon" element={<Comingsoon />} />
+        
+        <Route path="/logout" element={<Logout />} />
       </Route>
     )
   );

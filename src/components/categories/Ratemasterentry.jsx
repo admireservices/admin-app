@@ -11,6 +11,203 @@ import {
   Button,
   CircularProgress,
   Alert,
+  IconButton,
+} from "@mui/material";
+import { Edit, Delete } from "@mui/icons-material";
+
+export default function RateMasterEntry() {
+  const [formData, setFormData] = useState({
+    systemItemName: "",
+    recipeItemName: "",
+    unit: "",
+    purchaseRate: "",
+    packingUOM: "",
+    conversion: "",
+    yield: "",
+    yieldFinalRate: "",
+    category: "",
+  });
+
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [editId, setEditId] = useState(null); // Track the entry being edited
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = () => {
+    setLoading(true);
+    fetch("http://localhost:4040/api/ratemasterentry")
+      .then((response) => response.json())
+      .then((data) => {
+        setData(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error.message);
+        setLoading(false);
+      });
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const url = editId
+      ? `http://localhost:4040/api/ratemasterentry/${editId}`
+      : "http://localhost:4040/api/ratemasterentry";
+    const method = editId ? "PUT" : "POST";
+
+    fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to save data");
+        }
+        return response.json();
+      })
+      .then(() => {
+        fetchData();
+        setFormData({
+          systemItemName: "",
+          recipeItemName: "",
+          unit: "",
+          purchaseRate: "",
+          packingUOM: "",
+          conversion: "",
+          yield: "",
+          yieldFinalRate: "",
+          category: "",
+        });
+        setEditId(null);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error.message);
+        setLoading(false);
+      });
+  };
+
+  const handleEdit = (item) => {
+    setFormData(item);
+    setEditId(item._id);
+  };
+
+  const handleDelete = (id) => {
+    setLoading(true);
+    fetch(`http://localhost:4040/api/ratemasterentry/${id}`, {
+      method: "DELETE",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to delete data");
+        }
+        return response.json();
+      })
+      .then(() => {
+        fetchData();
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error.message);
+        setLoading(false);
+      });
+  };
+
+  return (
+    <div style={{ padding: "20px", textAlign: "center" }}>
+      <h2>Rate Master Entry</h2>
+
+      {error && <Alert severity="error">{error}</Alert>}
+
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center" }}>
+        <TextField label="System Item Name" name="systemItemName" value={formData.systemItemName} onChange={handleChange} required />
+        <TextField label="Recipe Item Name" name="recipeItemName" value={formData.recipeItemName} onChange={handleChange} required />
+        <TextField label="Unit" name="unit" value={formData.unit} onChange={handleChange} required />
+        <TextField label="Purchase Rate" name="purchaseRate" type="number" value={formData.purchaseRate} onChange={handleChange} required />
+        <TextField label="Packing UOM" name="packingUOM" value={formData.packingUOM} onChange={handleChange} required />
+        <TextField label="Conversion" name="conversion" type="number" value={formData.conversion} onChange={handleChange} required />
+        <TextField label="Yield" name="yield" type="number" value={formData.yield} onChange={handleChange} required />
+        <TextField label="Yield Final Rate" name="yieldFinalRate" type="number" value={formData.yieldFinalRate} onChange={handleChange} required />
+        <TextField label="Category" name="category" value={formData.category} onChange={handleChange} required />
+
+        <Button type="submit" variant="contained" color="primary">
+          {loading ? <CircularProgress size={24} /> : editId ? "Update Rate" : "Add Rate"}
+        </Button>
+      </form>
+
+      <h3 style={{ marginTop: "20px" }}>Entered Data</h3>
+
+      <TableContainer component={Paper} sx={{ width: "90%", margin: "auto" }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>System Item Name</TableCell>
+              <TableCell>Recipe Item Name</TableCell>
+              <TableCell>Unit</TableCell>
+              <TableCell>Purchase Rate</TableCell>
+              <TableCell>Packing UOM</TableCell>
+              <TableCell>Conversion</TableCell>
+              <TableCell>Yield</TableCell>
+              <TableCell>Yield Final Rate</TableCell>
+              <TableCell>Category</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.map((row) => (
+              <TableRow key={row._id}>
+                <TableCell>{row.systemItemName}</TableCell>
+                <TableCell>{row.recipeItemName}</TableCell>
+                <TableCell>{row.unit}</TableCell>
+                <TableCell>{row.purchaseRate}</TableCell>
+                <TableCell>{row.packingUOM}</TableCell>
+                <TableCell>{row.conversion}</TableCell>
+                <TableCell>{row.yield}</TableCell>
+                <TableCell>{row.yieldFinalRate}</TableCell>
+                <TableCell>{row.category}</TableCell>
+                <TableCell>
+                  <IconButton onClick={() => handleEdit(row)}>
+                    <Edit />
+                  </IconButton>
+                  <IconButton onClick={() => handleDelete(row._id)} color="error">
+                    <Delete />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </div>
+  );
+}
+
+
+
+{/*}
+import React, { useState, useEffect } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TextField,
+  Button,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 
 export default function RateMasterEntry() {
@@ -37,7 +234,7 @@ export default function RateMasterEntry() {
 
   const fetchData = () => {
     setLoading(true);
-    fetch("http://localhost:5000/api/ratemaster") // Update with actual backend API
+    fetch("http://localhost:4040/api/ratemasterentry") // Update with actual backend API
       .then((response) => response.json())
       .then((data) => {
         setData(data);
@@ -59,7 +256,7 @@ export default function RateMasterEntry() {
     e.preventDefault();
     setLoading(true);
 
-    fetch("http://localhost:5000/api/ratemaster", {
+    fetch("http://localhost:4040/api/ratemasterentry", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
@@ -95,10 +292,10 @@ export default function RateMasterEntry() {
     <div style={{ padding: "20px", textAlign: "center" }}>
       <h2>Rate Master Entry</h2>
 
-      {/* Error Message */}
+      {/* Error Message /}
       {error && <Alert severity="error">{error}</Alert>}
 
-      {/* Form */}
+      {/* Form /}
       <form onSubmit={handleSubmit} style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center" }}>
         <TextField label="System Item Name" name="systemItemName" value={formData.systemItemName} onChange={handleChange} required />
         <TextField label="Recipe Item Name" name="recipeItemName" value={formData.recipeItemName} onChange={handleChange} required />
@@ -115,7 +312,7 @@ export default function RateMasterEntry() {
         </Button>
       </form>
 
-      {/* Table */}
+      {/* Table /}
       <h3 style={{ marginTop: "20px" }}>Entered Data</h3>
       {loading && <CircularProgress />}
       {!loading && data.length === 0 && <p>No data available.</p>}
@@ -157,7 +354,7 @@ export default function RateMasterEntry() {
     </div>
   );
 }
-
+*/}
 
 
 

@@ -134,7 +134,7 @@ export default function RateMaster() {
 
   return (
     <div style={{ padding: "20px", textAlign: "center" }}>
-      <h2>Rate Master</h2>
+      <h2>Ingrediant Rate Master</h2>
 
       {/* Error Message */}
       {error && <Alert severity="error">{error}</Alert>}
