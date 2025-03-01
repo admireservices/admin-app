@@ -44,14 +44,7 @@ export default function Sidebar() {
         { name: "Base Recipe", icon: <KitchenOutlined />, route: "/baserecipe" },
       ],
     },
-    {
-      title: "Bar Inventory",
-      icon: <Inventory2Outlined />,
-      subcategories: [
-        { name: "Main Bar", icon: <LiquorOutlined />, route: "/comingsoon" },
-        { name: "Storeroom", icon: <LiquorOutlined />, route: "/comingsoon" },
-      ],
-    },
+  
     {
       title: "Recipe Data Entry",
       icon: <ReceiptLongOutlined />,
@@ -60,15 +53,25 @@ export default function Sidebar() {
         { name: "Food Recipe Entry", icon: <KitchenOutlined />, route: "/foodrecipeentry" },
         { name: "Rate Master Entry", icon: <KitchenOutlined />, route: "/ratemasterentry" },
         { name: "Base Recipe Entry", icon: <KitchenOutlined />, route: "/baserecipeentry" },
+        { name: "Menu Engineering Entry", icon: <KitchenOutlined />, route: "/menuengentry" },
       ],
     },
-    { title: "Rate Master", icon: <DescriptionOutlined />, route: "/ratemaster" },
+    //{ title: "Rate Master", icon: <DescriptionOutlined />, route: "/ratemaster" },
     { title: "Restaurant", icon: <DescriptionOutlined />, route: "/restaurant" },
+    { title: "Menu Engg Report", icon: <DescriptionOutlined />, route: "/menueng" },
     { title: "predefined", icon: <DescriptionOutlined />, route: "/comingsoon" },
     { title: "Access", icon: <DescriptionOutlined />, route: "/access" },
-    { title: "Reports", icon: <DescriptionOutlined />, route: "/reports" },
-    { title: "Settings", icon: <SettingsOutlined />, route: "/settings" },
     { title: "Logout", icon: <SettingsOutlined />, route: "/logout" },
+    {/*}
+    {
+      title: "Bar Inventory",
+      icon: <Inventory2Outlined />,
+      subcategories: [
+        { name: "Main Bar", icon: <LiquorOutlined />, route: "/comingsoon" },
+        { name: "Storeroom", icon: <LiquorOutlined />, route: "/comingsoon" },
+      ],
+    },
+    */}
   ];
 
   return (

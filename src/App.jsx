@@ -2,9 +2,7 @@ import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
 import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider } from "react-router-dom";
 import RootComponent from "./components/RootComponent";
 import Home from "./components/categories/Home";
-import Report from "./components/categories/Report";
 import Access from "./components/categories/Access";
-import Setting from "./components/categories/Setting";
 import Summaryrecipe from "./components/categories/Summaryrecipe";
 import Foodrecipe from "./components/categories/Foodrecipe";
 import Summaryentry from "./components/categories/Summaryentry";
@@ -14,6 +12,8 @@ import Ratemaster from "./components/categories/Ratemaster";
 import Ratemasterentry from "./components/categories/Ratemasterentry";
 import Baserecipe from "./components/categories/Baserecipe";
 import Ratemasterdata from "./components/categories/Ratemasterdata";
+import Menuengentry from "./components/categories/Menuengentry";
+import Menueng from "./components/categories/Menueng";
 import Restaurant from "./components/categories/Restaurant";
 import Comingsoon from "./components/categories/Comingsoon";
 import Login from "./components/categories/Login";
@@ -38,9 +38,7 @@ function App() {
         <Route index element={<Home />} /> {/* Default page */}
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/reports" element={<Report />} />
         <Route path="/access" element={<Access />} />
-        <Route path="/settings" element={<Setting />} />
         <Route path="/recipesummary" element={<Summaryrecipe />} />
         <Route path="/foodrecipe" element={<Foodrecipe />} />
         <Route path="/summaryentry" element={<Summaryentry />} />
@@ -50,6 +48,8 @@ function App() {
         <Route path="/ratemasterentry" element={<Ratemasterentry />} />
         <Route path="/baserecipe" element={<Baserecipe />} />
         <Route path="/ratemasterdata" element={<Ratemasterdata />} />
+        <Route path="/menuengentry" element={<Menuengentry />} />
+        <Route path="/menueng" element={<Menueng />} />
         <Route path="/restaurant" element={<Restaurant />} />
         <Route path="/comingsoon" element={<Comingsoon />} />
         

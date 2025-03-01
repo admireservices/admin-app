@@ -18,8 +18,6 @@ import {
 
 export default function Summaryrecipe() {
   const [predefinedData, setPredefinedData] = useState([]);
-
-
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedOutlet, setSelectedOutlet] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");

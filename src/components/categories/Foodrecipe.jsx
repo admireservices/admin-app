@@ -14,6 +14,167 @@ import {
   FormControl,
   InputLabel,
   Grid,
+  CircularProgress,
+} from "@mui/material";
+import axios from "axios";
+
+export default function FoodRecipe() {
+  const [editMode, setEditMode] = useState(false);
+  const [cities, setCities] = useState([]);
+  const [outlets, setOutlets] = useState([]);
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedOutlet, setSelectedOutlet] = useState("");
+  const [recipeSearch, setRecipeSearch] = useState("");
+  const [recipes, setRecipes] = useState([]);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    axios.get("http://localhost:4040/api/cities").then((response) => {
+      setCities(response.data);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (selectedCity) {
+      axios.get(`http://localhost:4040/api/outlets?city=${selectedCity}`).then((response) => {
+        setOutlets(response.data);
+      });
+    }
+  }, [selectedCity]);
+
+  useEffect(() => {
+    if (selectedCity && selectedOutlet) {
+      setLoading(true);
+      axios
+        .get("http://localhost:4040/api/recipes", {
+          params: { city: selectedCity, outlet: selectedOutlet },
+        })
+        .then((response) => {
+          setRecipes(response.data);
+        })
+        .catch(() => console.error("Error fetching recipes"))
+        .finally(() => setLoading(false));
+    }
+  }, [selectedCity, selectedOutlet]);
+
+  const handleEdit = () => {
+    setEditMode(!editMode);
+  };
+
+  const handleChange = (index, key, value) => {
+    const updatedData = [...data];
+    updatedData[index][key] = value;
+    updatedData[index].amount = updatedData[index].qty * updatedData[index].rate;
+    setData(updatedData);
+  };
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <Grid container spacing={2} alignItems="center">
+        <Grid item xs={3}>
+          <FormControl fullWidth>
+            <InputLabel>City</InputLabel>
+            <Select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)}>
+              {cities.map((city, index) => (
+                <MenuItem key={index} value={city}>{city}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+
+        <Grid item xs={3}>
+          <FormControl fullWidth>
+            <InputLabel>Outlet</InputLabel>
+            <Select value={selectedOutlet} onChange={(e) => setSelectedOutlet(e.target.value)}>
+              {outlets.map((outlet, index) => (
+                <MenuItem key={index} value={outlet}>{outlet}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+
+        <Grid item xs={3}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Search Recipe"
+            value={recipeSearch}
+            onChange={(e) => setRecipeSearch(e.target.value)}
+          />
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          {selectedRecipe && <h2 style={{ backgroundColor: "#d0e8b6", padding: "10px" }}>{selectedRecipe.name}</h2>}
+
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow style={{ backgroundColor: "#8BC34A" }}>
+                  <TableCell><strong>INGREDIENT</strong></TableCell>
+                  <TableCell><strong>UNIT</strong></TableCell>
+                  <TableCell><strong>QTY</strong></TableCell>
+                  <TableCell><strong>RATE</strong></TableCell>
+                  <TableCell><strong>AMOUNT</strong></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {data.map((row, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{row.ingredient}</TableCell>
+                    <TableCell>{row.unit}</TableCell>
+                    <TableCell>
+                      {editMode ? (
+                        <TextField type="number" value={row.qty} onChange={(e) => handleChange(index, "qty", Number(e.target.value))} sx={{ width: "60px" }} />
+                      ) : (
+                        row.qty
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editMode ? (
+                        <TextField type="number" value={row.rate} onChange={(e) => handleChange(index, "rate", Number(e.target.value))} sx={{ width: "60px" }} />
+                      ) : (
+                        row.rate
+                      )}
+                    </TableCell>
+                    <TableCell>{row.amount.toFixed(2)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          <Button variant="contained" color={editMode ? "success" : "primary"} onClick={handleEdit} sx={{ marginTop: "20px" }}>
+            {editMode ? "Save" : "Edit"}
+          </Button>
+        </Grid>
+      </Grid>
+    </div>
+  );
+}
+
+
+
+{/*}
+import React, { useState, useEffect } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  Paper,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Grid,
   List,
   ListItem,
   ListItemButton,
@@ -78,7 +239,7 @@ export default function FoodRecipe() {
   return (
     <div style={{ padding: "20px" }}>
       <Grid container spacing={2}>
-        {/* Left Side - Recipe List */}
+        {/* Left Side - Recipe List /}
         <Grid item xs={3}>
           <h3>Recipes</h3>
           {loading ? (
@@ -99,10 +260,10 @@ export default function FoodRecipe() {
           )}
         </Grid>
 
-        {/* Right Side - Table & Controls */}
+        {/* Right Side - Table & Controls /}
         <Grid item xs={9}>
           <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
-            {/* City Dropdown */}
+            {/* City Dropdown /}
             <FormControl sx={{ minWidth: 150 }}>
               <InputLabel>City</InputLabel>
               <Select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)}>
@@ -114,7 +275,7 @@ export default function FoodRecipe() {
               </Select>
             </FormControl>
 
-            {/* Outlet Dropdown */}
+            {/* Outlet Dropdown /}
             <FormControl sx={{ minWidth: 150 }}>
               <InputLabel>Outlet</InputLabel>
               <Select value={selectedOutlet} onChange={(e) => setSelectedOutlet(e.target.value)}>
@@ -127,14 +288,14 @@ export default function FoodRecipe() {
             </FormControl>
           </div>
 
-          {/* Recipe Title */}
+          {/* Recipe Title /}
           {selectedRecipe && (
             <h2 style={{ backgroundColor: "#d0e8b6", padding: "10px" }}>
               {selectedRecipe.name}
             </h2>
           )}
 
-          {/* Table */}
+          {/* Table /}
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -182,7 +343,7 @@ export default function FoodRecipe() {
             </Table>
           </TableContainer>
 
-          {/* Edit/Save Button */}
+          {/* Edit/Save Button /}
           <Button
             variant="contained"
             color={editMode ? "success" : "primary"}

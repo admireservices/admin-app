@@ -5,6 +5,215 @@ import {
   Button, Paper, Select, MenuItem, TextField
 } from "@mui/material";
 
+const API_URL = "http://localhost:4040/api";
+const CATEGORY_API_URL = "http://localhost:4040/api/predefined/list-by-type";
+
+export default function SummaryEntry() {
+  const [cityList, setCityList] = useState([]);
+  const [restaurantList, setRestaurantList] = useState([]);
+  const [categoryList, setCategoryList] = useState([]);
+
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedRestaurant, setSelectedRestaurant] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  const [foodItems, setFoodItems] = useState([]);
+  const [newFoodItem, setNewFoodItem] = useState({ recipeName: "", costPrice: "" });
+
+  useEffect(() => {
+    fetchCities();
+    fetchFoodItems();
+  }, []);
+
+  // Fetch cities
+  const fetchCities = async () => {
+    try {
+      const response = await axios.post(CATEGORY_API_URL, { entityType: "CITY", parentId: 14 });
+      setCityList(response.data.data);
+    } catch (error) {
+      console.error("Error fetching cities:", error);
+    }
+  };
+
+  // Fetch restaurants based on selected city
+const fetchRestaurants = async (cityId) => {
+  try {
+    const response = await axios.get(`${API_URL}/restaurant?cityId=${cityId}`);
+    setRestaurantList(response.data);
+  } catch (error) {
+    console.error("Error fetching restaurants:", error);
+  }
+};
+
+  // Fetch categories based on selected restaurant
+  const fetchCategories = async (restaurantId) => {
+    try {
+      const response = await axios.post(CATEGORY_API_URL, { entityType: "CATEGORY", parentId: restaurantId });
+      setCategoryList(response.data.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  // Fetch existing food items
+  const fetchFoodItems = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/fooditems`);
+      setFoodItems(response.data);
+    } catch (error) {
+      console.error("Error fetching food items:", error);
+    }
+  };
+
+  const handleAddFoodItem = async () => {
+    if (!selectedCity || !selectedRestaurant || !selectedCategory || !newFoodItem.recipeName || !newFoodItem.costPrice) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    const foodItemData = {
+      recipeName: newFoodItem.recipeName,
+      costPrice: parseFloat(newFoodItem.costPrice),
+      cityId: selectedCity,
+      restaurantId: selectedRestaurant,
+      categoryId: selectedCategory,
+    };
+
+    try {
+      await axios.post(`${API_URL}/fooditems`, foodItemData);
+      fetchFoodItems();
+      setNewFoodItem({ recipeName: "", costPrice: "" });
+    } catch (error) {
+      console.error("Error adding food item:", error);
+    }
+  };
+
+  const handleDeleteFoodItem = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/fooditems/${id}`);
+      fetchFoodItems();
+    } catch (error) {
+      console.error("Error deleting food item:", error);
+    }
+  };
+
+  return (
+    <div style={{ padding: "20px", textAlign: "center" }}>
+      <h2>Recipe Summary Data Entry</h2>
+
+      {/* Dropdowns for City, Restaurant, Category */}
+      <div style={{ marginBottom: "20px" }}>
+        <Select
+          value={selectedCity}
+          onChange={(e) => {
+            setSelectedCity(e.target.value);
+            setSelectedRestaurant("");
+            setSelectedCategory("");
+            fetchRestaurants(e.target.value);
+          }}
+          displayEmpty
+          sx={{ marginRight: "10px", width: "150px" }}
+        >
+          <MenuItem value="" disabled>Select City</MenuItem>
+          {cityList.map((city) => (
+            <MenuItem key={city.id} value={city.id}>{city.name}</MenuItem>
+          ))}
+        </Select>
+
+        <Select
+          value={selectedRestaurant}
+          onChange={(e) => {
+            setSelectedRestaurant(e.target.value);
+            setSelectedCategory("");
+          }}
+          displayEmpty
+          sx={{ marginRight: "10px", width: "150px" }}
+          disabled={!selectedCity}
+        >
+          <MenuItem value="" disabled>Select Restaurant</MenuItem>
+          {restaurantList.map((restaurant) => (
+            <MenuItem key={restaurant.id} value={restaurant.name}>{restaurant.name}</MenuItem>
+          ))}
+        </Select>
+
+        <Select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          displayEmpty
+          sx={{ width: "150px" }}
+          disabled={!selectedRestaurant}
+        >
+          <MenuItem value="" disabled>Select Category</MenuItem>
+          {categoryList.map((category) => (
+            <MenuItem key={category.id} value={category.id}>{category.name}</MenuItem>
+          ))}
+        </Select>
+      </div>
+
+      {/* Input fields for new food items */}
+      <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "20px" }}>
+        <TextField
+          label="Recipe Name"
+          value={newFoodItem.recipeName}
+          onChange={(e) => setNewFoodItem({ ...newFoodItem, recipeName: e.target.value })}
+          sx={{ width: "200px" }}
+        />
+        <TextField
+          label="Cost Price"
+          type="number"
+          value={newFoodItem.costPrice}
+          onChange={(e) => setNewFoodItem({ ...newFoodItem, costPrice: e.target.value })}
+          sx={{ width: "150px" }}
+        />
+        <Button variant="contained" color="primary" onClick={handleAddFoodItem}>Add Item</Button>
+      </div>
+
+      {/* Table to display food items */}
+      <TableContainer component={Paper} sx={{ width: "80%", margin: "auto" }}>
+        <Table>
+          <TableHead>
+            <TableRow style={{ backgroundColor: "#8BC34A" }}>
+              <TableCell><strong>SR NO</strong></TableCell>
+              <TableCell><strong>RECIPE NAME</strong></TableCell>
+              <TableCell><strong>COST PRICE</strong></TableCell>
+              <TableCell><strong>CITY</strong></TableCell>
+              <TableCell><strong>RESTAURANT</strong></TableCell>
+              <TableCell><strong>CATEGORY</strong></TableCell>
+              <TableCell><strong>ACTIONS</strong></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {foodItems.map((foodItem, index) => (
+              <TableRow key={foodItem._id}>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>{foodItem.recipeName}</TableCell>
+                <TableCell>{foodItem.costPrice}</TableCell>
+                <TableCell>{foodItem.cityId}</TableCell>
+                <TableCell>{foodItem.restaurantId}</TableCell>
+                <TableCell>{foodItem.categoryId}</TableCell>
+                <TableCell>
+                  <Button variant="contained" color="secondary" onClick={() => handleDeleteFoodItem(foodItem._id)}>Delete</Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </div>
+  );
+}
+
+
+
+
+{/*}
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Button, Paper, Select, MenuItem, TextField
+} from "@mui/material";
+
 export default function Summaryentry() {
   const [predefinedData, setPredefinedData] = useState([]);
   const [selectedCity, setSelectedCity] = useState("");
@@ -17,7 +226,7 @@ export default function Summaryentry() {
   useEffect(() => {
     const fetchPredefinedData = async () => {
       try {
-        const response = await axios.get("http://localhost:4040/api/predefined");
+        const response = await axios.get("http://localhost:4040/api/predefined/list-by-type");
         setPredefinedData(response.data);
       } catch (error) {
         console.error("Error fetching predefined data:", error);
@@ -113,134 +322,6 @@ export default function Summaryentry() {
             ))}
           </Select>
         </div>
-
-      <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "20px" }}>
-        <TextField label="Recipe Name" value={newFoodItem.recipeName} onChange={(e) => setNewFoodItem({ ...newFoodItem, recipeName: e.target.value })} sx={{ width: "200px" }} />
-        <TextField label="Cost Price" type="number" value={newFoodItem.costPrice} onChange={(e) => setNewFoodItem({ ...newFoodItem, costPrice: e.target.value })} sx={{ width: "150px" }} />
-        <Button variant="contained" color="primary" onClick={handleAddFoodItem}>Add ITEMS</Button>
-      </div>
-
-      <TableContainer component={Paper} sx={{ width: "80%", margin: "auto" }}>
-        <Table>
-          <TableHead>
-            <TableRow style={{ backgroundColor: "#8BC34A" }}>
-              <TableCell><strong>SR NO</strong></TableCell>
-              <TableCell><strong>RECIPE NAME</strong></TableCell>
-              <TableCell><strong>COST PRICE</strong></TableCell>
-              <TableCell><strong>CITY</strong></TableCell>
-              <TableCell><strong>OUTLET</strong></TableCell>
-              <TableCell><strong>CATEGORY</strong></TableCell>
-              <TableCell><strong>ACTIONS</strong></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {fooditems.map((fooditem, index) => (
-              <TableRow key={fooditem._id}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{fooditem.recipeName}</TableCell>
-                <TableCell>{fooditem.costPrice}</TableCell>
-                <TableCell>{fooditem.city}</TableCell>
-                <TableCell>{fooditem.outlet}</TableCell>
-                <TableCell>{fooditem.category}</TableCell>
-                <TableCell><Button variant="contained" color="secondary" onClick={() => handleDeleteFoodItem(fooditem._id)}>Delete</Button></TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </div>
-  );
-}
-
-
-
-
-
-{/*}
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Button, Paper, Select, MenuItem, TextField
-} from "@mui/material";
-
-export default function Summaryentry() {
-  const [selectedCity, setSelectedCity] = useState("");
-  const [selectedOutlet, setSelectedOutlet] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [fooditems, setFooditems] = useState([]);
-  const [newFoodItem, setNewFoodItem] = useState({ recipeName: "", costPrice: "" });
-
-  const cities = ["Mumbai", "Delhi", "Pune"];
-  const outlets = { "Mumbai": ["One8", "Lod"], "Delhi": ["Yazu", "Pincode"], "Pune": ["2 BHK", "Ballr"] };
-  const categories = ["Soups", "Main Course", "Appetizers"];
-
-  // Fetch fooditems from MongoDB on component mount
-  useEffect(() => {
-    fetchFooditems();
-  }, []);
-
-  const fetchFooditems = async () => {
-    try {
-      const response = await axios.get("http://localhost:4040/api/fooditems");
-      setFooditems(response.data);
-    } catch (error) {
-      console.error("Error fetching fooditems:", error);
-    }
-  };
-
-  const handleAddFoodItem = async () => {
-    if (!selectedCity || !selectedOutlet || !selectedCategory || !newFoodItem.recipeName || !newFoodItem.costPrice) {
-      alert("Please fill all fields.");
-      return;
-    }
-
-    const foodItemData = {
-      recipeName: newFoodItem.recipeName,
-      costPrice: parseFloat(newFoodItem.costPrice),
-      city: selectedCity,
-      outlet: selectedOutlet,
-      category: selectedCategory,
-    };
-
-    try {
-      await axios.post("http://localhost:4040/api/fooditems", foodItemData);
-      fetchFooditems(); // Refresh data after adding
-      setNewFoodItem({ recipeName: "", costPrice: "" });
-    } catch (error) {
-      console.error("Error adding food item:", error);
-    }
-  };
-
-  const handleDeleteFoodItem = async (id) => {
-    try {
-      await axios.delete(`http://localhost:4040/api/fooditems/${id}`);
-      fetchFooditems(); // Refresh data after deletion
-    } catch (error) {
-      console.error("Error deleting food item:", error);
-    }
-  };
-
-  return (
-    <div style={{ padding: "20px", textAlign: "center" }}>
-      <h2>Recipe Summary Data Entry</h2>
-
-      <div style={{ marginBottom: "20px" }}>
-        <Select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)} displayEmpty sx={{ marginRight: "10px", width: "150px" }}>
-          <MenuItem value="" disabled>Select City</MenuItem>
-          {cities.map((city, index) => <MenuItem key={index} value={city}>{city}</MenuItem>)}
-        </Select>
-
-        <Select value={selectedOutlet} onChange={(e) => setSelectedOutlet(e.target.value)} displayEmpty sx={{ marginRight: "10px", width: "150px" }} disabled={!selectedCity}>
-          <MenuItem value="" disabled>Select Outlet</MenuItem>
-          {selectedCity && outlets[selectedCity].map((outlet, index) => <MenuItem key={index} value={outlet}>{outlet}</MenuItem>)}
-        </Select>
-
-        <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} displayEmpty sx={{ width: "150px" }} disabled={!selectedOutlet}>
-          <MenuItem value="" disabled>Select Category</MenuItem>
-          {categories.map((category, index) => <MenuItem key={index} value={category}>{category}</MenuItem>)}
-        </Select>
-      </div>
 
       <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "20px" }}>
         <TextField label="Recipe Name" value={newFoodItem.recipeName} onChange={(e) => setNewFoodItem({ ...newFoodItem, recipeName: e.target.value })} sx={{ width: "200px" }} />

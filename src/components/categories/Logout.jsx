@@ -1,5 +1,65 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { Box, Button } from "@mui/material";
+import LogoutIcon from "@mui/icons-material/ExitToApp";
+
+export default function SidebarLogout() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Clear session (Remove authentication data)
+    localStorage.removeItem("userToken");
+    sessionStorage.clear();
+
+    // Redirect to login & prevent back navigation
+    navigate("/login", { replace: true });
+
+    // Block back navigation
+    window.history.pushState(null, "", window.location.href);
+    window.onpopstate = function () {
+      window.history.pushState(null, "", window.location.href);
+    };
+  };
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh", // Full height to center the button
+      }}
+    >
+      <Button
+        onClick={handleLogout}
+        variant="contained"
+        color="error"
+        startIcon={<LogoutIcon />}
+        sx={{
+          padding: "12px 30px",
+          fontSize: "18px",
+          borderRadius: "30px",
+          fontWeight: "bold",
+          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+          transition: "all 0.3s ease",
+          "&:hover": {
+            backgroundColor: "#d32f2f",
+            transform: "scale(1.05)",
+          },
+        }}
+      >
+        Logout
+      </Button>
+    </Box>
+  );
+}
+
+
+
+
+{/*}
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 
