@@ -5,57 +5,50 @@ import {
   Button, Paper, Select, MenuItem, TextField
 } from "@mui/material";
 
-const API_URL = "http://localhost:4040/api";
-const CATEGORY_API_URL = "http://localhost:4040/api/predefined/list-by-type";
+const API_URL = "http://localhost:4040/api/restaurant";
 
 export default function SummaryEntry() {
   const [cityList, setCityList] = useState([]);
   const [restaurantList, setRestaurantList] = useState([]);
   const [categoryList, setCategoryList] = useState([]);
-
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedRestaurant, setSelectedRestaurant] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-
   const [foodItems, setFoodItems] = useState([]);
   const [newFoodItem, setNewFoodItem] = useState({ recipeName: "", costPrice: "" });
 
+  // Fetch cities on component mount
   useEffect(() => {
     fetchCities();
-    fetchFoodItems();
   }, []);
 
-  // Fetch cities
-  const fetchCities = async () => {
+  // Generic function to fetch data
+  const fetchData = async (entityType, parentId, setData) => {
     try {
-      const response = await axios.post(CATEGORY_API_URL, { entityType: "CITY", parentId: 14 });
-      setCityList(response.data.data);
+      const response = await axios.post(API_URL, { entityType, parentId });
+      setData(response.data.data || []);
     } catch (error) {
-      console.error("Error fetching cities:", error);
+      console.error(`Error fetching ${entityType.toLowerCase()}s:`, error);
+      setData([]);
     }
   };
 
-  // Fetch restaurants based on selected city
-const fetchRestaurants = async (cityId) => {
-  try {
-    const response = await axios.get(`${API_URL}/restaurant?cityId=${cityId}`);
-    setRestaurantList(response.data);
-  } catch (error) {
-    console.error("Error fetching restaurants:", error);
-  }
-};
-
-  // Fetch categories based on selected restaurant
-  const fetchCategories = async (restaurantId) => {
-    try {
-      const response = await axios.post(CATEGORY_API_URL, { entityType: "CATEGORY", parentId: restaurantId });
-      setCategoryList(response.data.data);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
+  // Fetch Cities
+  const fetchCities = () => {
+    fetchData("CITY", null, setCityList);
   };
 
-  // Fetch existing food items
+  // Fetch Restaurants based on City
+  const fetchRestaurants = (cityId) => {
+    fetchData("RESTAURANT", cityId, setRestaurantList);
+  };
+
+  // Fetch Categories based on Restaurant
+  const fetchCategories = (restaurantId) => {
+    fetchData("CATEGORY", restaurantId, setCategoryList);
+  };
+
+  // Fetch Food Items
   const fetchFoodItems = async () => {
     try {
       const response = await axios.get(`${API_URL}/fooditems`);
@@ -65,6 +58,7 @@ const fetchRestaurants = async (cityId) => {
     }
   };
 
+  // Handle adding a new food item
   const handleAddFoodItem = async () => {
     if (!selectedCity || !selectedRestaurant || !selectedCategory || !newFoodItem.recipeName || !newFoodItem.costPrice) {
       alert("Please fill all fields.");
@@ -88,6 +82,7 @@ const fetchRestaurants = async (cityId) => {
     }
   };
 
+  // Handle deleting a food item
   const handleDeleteFoodItem = async (id) => {
     try {
       await axios.delete(`${API_URL}/fooditems/${id}`);
@@ -97,18 +92,22 @@ const fetchRestaurants = async (cityId) => {
     }
   };
 
+
   return (
     <div style={{ padding: "20px", textAlign: "center" }}>
       <h2>Recipe Summary Data Entry</h2>
 
-      {/* Dropdowns for City, Restaurant, Category */}
-      <div style={{ marginBottom: "20px" }}>
+        {/* Dropdowns for City, Restaurant, Category */}
+        <div style={{ marginBottom: "20px" }}>
+        {/* City Dropdown */}
         <Select
           value={selectedCity}
           onChange={(e) => {
             setSelectedCity(e.target.value);
             setSelectedRestaurant("");
             setSelectedCategory("");
+            setRestaurantList([]);
+            setCategoryList([]);
             fetchRestaurants(e.target.value);
           }}
           displayEmpty
@@ -120,11 +119,14 @@ const fetchRestaurants = async (cityId) => {
           ))}
         </Select>
 
+        {/* Restaurant Dropdown */}
         <Select
           value={selectedRestaurant}
           onChange={(e) => {
             setSelectedRestaurant(e.target.value);
             setSelectedCategory("");
+            setCategoryList([]);
+            fetchCategories(e.target.value);
           }}
           displayEmpty
           sx={{ marginRight: "10px", width: "150px" }}
@@ -132,13 +134,17 @@ const fetchRestaurants = async (cityId) => {
         >
           <MenuItem value="" disabled>Select Restaurant</MenuItem>
           {restaurantList.map((restaurant) => (
-            <MenuItem key={restaurant.id} value={restaurant.name}>{restaurant.name}</MenuItem>
+            <MenuItem key={restaurant.id} value={restaurant.id}>{restaurant.name}</MenuItem>
           ))}
         </Select>
 
+        {/* Category Dropdown */}
         <Select
           value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
+          onChange={(e) => {
+            setSelectedCategory(e.target.value);
+            fetchFoodItems();
+          }}
           displayEmpty
           sx={{ width: "150px" }}
           disabled={!selectedRestaurant}
@@ -149,6 +155,7 @@ const fetchRestaurants = async (cityId) => {
           ))}
         </Select>
       </div>
+
 
       {/* Input fields for new food items */}
       <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "20px" }}>

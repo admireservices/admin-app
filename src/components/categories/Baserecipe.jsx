@@ -28,7 +28,7 @@ export default function BaseRecipe() {
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
-    axios.get("http://localhost:4040/api/cities").then((res) => setCities(res.data));
+    axios.post("http://localhost:4040/api/predefined/list-by-type").then((res) => setCities(res.data));
   }, []);
 
   useEffect(() => {

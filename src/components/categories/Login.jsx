@@ -1,4 +1,80 @@
 import React, { useState } from "react";
+import { TextField, Button, Typography, Paper, Box, MenuItem } from "@mui/material";
+import { styled } from "@mui/system";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const LoginContainer = styled(Paper)({
+  width: "400px",
+  padding: "30px",
+  margin: "80px auto",
+  textAlign: "center",
+  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+  borderRadius: "10px",
+});
+
+const InputField = styled(TextField)({
+  marginBottom: "15px",
+  "& .MuiOutlinedInput-root": {
+    "& fieldset": { borderColor: "#ccc" },
+    "&:hover fieldset": { borderColor: "#1976d2" },
+    "&.Mui-focused fieldset": { borderColor: "#1976d2" },
+  },
+});
+
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("admin");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const handleLogin = async () => {
+    if (!email || !password || !role) {
+      setError("All fields are required");
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:4040/api/users", { email, password, role });
+      localStorage.setItem("token", response.data.token);
+      navigate("/home");
+    } catch (err) {
+      setError(err.response?.data?.message || "Invalid credentials");
+    }
+  };
+
+  return (
+    <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" bgcolor="#f4f7fc">
+      <LoginContainer>
+        <Typography variant="h5" fontWeight="bold" color="primary">
+          Login
+        </Typography>
+        <Typography variant="body2" color="textSecondary" marginBottom="20px">
+          Enter your credentials to continue
+        </Typography>
+
+        {error && <Typography color="error">{error}</Typography>}
+
+        <InputField fullWidth label="Email" variant="outlined" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <InputField fullWidth label="Password" type="password" variant="outlined" value={password} onChange={(e) => setPassword(e.target.value)} />
+
+        <InputField select fullWidth label="Select Role" variant="outlined" value={role} onChange={(e) => setRole(e.target.value)}>
+          <MenuItem value="admin">Admin</MenuItem>
+          <MenuItem value="office">Office</MenuItem>
+        </InputField>
+
+        <Button variant="contained" color="primary" fullWidth onClick={handleLogin} sx={{ marginTop: "10px", padding: "10px", fontWeight: "bold" }}>
+          Login
+        </Button>
+      </LoginContainer>
+    </Box>
+  );
+}
+
+
+{/*}
+import React, { useState } from "react";
 import { TextField, Button, Typography, Paper, Box } from "@mui/material";
 import { styled } from "@mui/system";
 import { useNavigate } from "react-router-dom";
@@ -35,7 +111,7 @@ export default function Login() {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/admin/login", { email, password });
+      const response = await axios.post("http://localhost:5000/api/admin/users", { email, password });
       localStorage.setItem("token", response.data.token);
       navigate("/home");
     } catch (err) {
@@ -65,3 +141,4 @@ export default function Login() {
     </Box>
   );
 }
+  */}
